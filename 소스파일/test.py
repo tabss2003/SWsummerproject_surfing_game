@@ -12,6 +12,8 @@ wave_width = 110
 surf_width =90
 surf_height =55
 
+trash_width =110
+trash_height =67
 
 
 def drawObject(obj,x,y):
@@ -21,7 +23,10 @@ def drawObject(obj,x,y):
 
 def runGame():
     global gamepad,clock,surf,background1,background2
-    global wave,trashs,bullet
+    global wave,trashs,bullet,boom
+
+    isShottrash = False
+    boom_count =0
     
     bullet_xy=[]
 
@@ -104,8 +109,19 @@ def runGame():
             for i,bxy in enumerate(bullet_xy):
                 bxy[0] +=5
                 bullet_xy[i][0] = bxy[0]
-                if bxy[0] >= pad_height:
-                    bullet_xy.remove(bxy)
+
+
+                if bxy[0] >trash_x:
+                    if bxy[1] >trash_y and bxy[1] <trash_y+trash_height:
+                        bullet_xy.remove(bxy)
+                        isShottrash =True
+                        
+                if bxy[0] >= pad_width:
+                    try:
+                        bullet_xy.remove(bxy)
+                    except:
+                        pass
+                    
         drawObject(surf,x,y)
         drawObject(wave,wave_x,wave_y)
 
@@ -114,23 +130,24 @@ def runGame():
         else:
             trash_x-=5
             
-        if trash_x<=0:
-            trash_x=pad_width
-            trash_y=random.randrange(0,pad_height)
-            random.shuffle(trashs)
-            trash=trashs[0]
-                
-        if trash !=None:
-            drawObject(trash,trash_x,trash_y)
-            
+
         if wave !=None:
             drawObject(wave,wave_x,wave_y)
         if len(bullet_xy)!=0:
             for bx,by in bullet_xy:
                 drawObject(bullet,bx,by)
         
-
-
+        if not isShottrash:
+            drawObject(trash,trash_x,trash_y)
+        else:
+            drawObject(boom,trash_x,trash_y)
+            boom_count+=1
+            if boom_count>5:
+                trash_x=pad_width
+                trash_y=random.randrange(0,pad_height)
+                random.shuffle(trashs)
+                trash=trashs[0]
+                isShottrash=False
 
         pg.display.update()
         clock.tick(60)
@@ -140,7 +157,7 @@ def runGame():
 
 def initGame():
     global gamepad,clock,surf,background1,background2
-    global wave,trashs,bullet
+    global wave,trashs,bullet,boom
 
 
     trashs=[]
@@ -157,6 +174,7 @@ def initGame():
     wave=pg.image.load('C:/Users/tabss/OneDrive/문서/GitHub/SWsummerproject_surfing_game/image/wave.png')
     wave=pg.transform.scale(wave,(80,80))
     
+    boom= pg.image.load('C:/Users/tabss/OneDrive/문서/GitHub/SWsummerproject_surfing_game/image/boom.png')
 
     trash1=pg.image.load('C:/Users/tabss/OneDrive/문서/GitHub/SWsummerproject_surfing_game/image/trash1.png')
     trash1=pg.transform.scale(trash1,(80,80))
