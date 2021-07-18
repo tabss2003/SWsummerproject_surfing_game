@@ -23,7 +23,7 @@ def drawObject(obj,x,y):
 
 def runGame():
     global gamepad,clock,surf,background1,background2
-    global wave,trashs,bullet,boom
+    global waves,trash,bullet,boom
 
     isShottrash = False
     boom_count =0
@@ -40,12 +40,12 @@ def runGame():
 
     wave_x=pad_width
     wave_y=random.randrange(0,pad_height)
+    random.shuffle(waves)
+    wave=waves[0]
 
     trash_x=pad_width
     trash_y=random.randrange(0,pad_height)
-    random.shuffle(trashs)
-    trash=trashs[0]
-    
+
     
     crashed =False
     while not crashed:
@@ -73,20 +73,13 @@ def runGame():
                     x_change =0
                 elif event.key == pygame.K_UP or event.key == pygame.K_DOWN:
                     y_change =0
-        x+=x_change
-        y+=y_change
 
-        if y <0:
-            y=0
-        elif y>pad_height - surf_width:
-            y= pad_height - surf_height
-        
         gamepad.fill(WHITE)
 
         background1_x -=2 
         background2_x -=2
 
-                    
+
         if background1_x == -background_width:
             background1_x =background_width
             
@@ -96,17 +89,40 @@ def runGame():
         drawObject(background1,background1_x,0)
         drawObject(background2,background2_x,0)
         
-        wave_x -=5
-        if wave_x<=0:
-            wave_x=-pad_width
-            wave_y=random.randrange(0,pad_height)
+        x+=x_change
+        y+=y_change
 
+        if y <0:
+            y=0
+        elif y>pad_height - surf_height:
+            y= pad_height - surf_height
 
+        if x<0:
+            x=0
+        elif x>pad_width - surf_width:
+            y= pad_width - surf_width            
+        
+        trash_x -=5
+        if trash_x<=0:
+            trash_x = pad_width
+            trash_y=random.randrange(0,pad_height)
+
+        if wave == None:
+            wave_x -=3
+        else:
+            wave_x -=5
+
+        if wave_x <=0:
+            wave_x = pad_width
+            wave_y =random.randrange(0,pad_height)
+            random.shuffle(waves)
+            wave=waves[0]
+            
+        
         if len(bullet_xy)!=0:
             for i,bxy in enumerate(bullet_xy):
                 bxy[0] +=5
                 bullet_xy[i][0] = bxy[0]
-
 
                 if bxy[0] >trash_x:
                     if bxy[1] >trash_y and bxy[1] <trash_y+trash_height:
@@ -120,21 +136,11 @@ def runGame():
                         pass
                     
         drawObject(surf,x,y)
-        drawObject(wave,wave_x,wave_y)
 
-        if trash == None:
-            trash_x-=7
-        else:
-            trash_x-=5
-            
-
-        if wave !=None:
-            drawObject(wave,wave_x,wave_y)
-            
         if len(bullet_xy)!=0:
             for bx,by in bullet_xy:
                 drawObject(bullet,bx,by)
-        
+                
         if not isShottrash:
             drawObject(trash,trash_x,trash_y)
         else:
@@ -143,9 +149,11 @@ def runGame():
             if boom_count>5:
                 trash_x=pad_width
                 trash_y=random.randrange(0,pad_height-trash_height)
-                random.shuffle(trashs)
-                trash=trashs[0]
                 isShottrash=False
+
+        if wave !=None:
+            drawObject(wave,wave_x,wave_y)
+
 
         pg.display.update()
         clock.tick(60)
@@ -155,10 +163,10 @@ def runGame():
 
 def initGame():
     global gamepad,clock,surf,background1,background2
-    global wave,trashs,bullet,boom
+    global waves,trash,bullet,boom
 
 
-    trashs=[]
+    waves=[]
 
     
     pygame.init()
@@ -171,33 +179,27 @@ def initGame():
 
     wave=pg.image.load('C:/Users/tabss/OneDrive/문서/GitHub/SWsummerproject_surfing_game/image/wave.png')
     wave=pg.transform.scale(wave,(80,80))
+    waves.append(wave)
+    wave2=pg.image.load('C:/Users/tabss/OneDrive/문서/GitHub/SWsummerproject_surfing_game/image/wave2.png')
+    wave2=pg.transform.scale(wave2,(80,80))
+    waves.append(wave2)
+    wave3=pg.image.load('C:/Users/tabss/OneDrive/문서/GitHub/SWsummerproject_surfing_game/image/wave3.png')
+    wave3=pg.transform.scale(wave3,(80,80))
+    waves.append(wave3)
+    wave4=pg.image.load('C:/Users/tabss/OneDrive/문서/GitHub/SWsummerproject_surfing_game/image/wave4.png')
+    wave4=pg.transform.scale(wave4,(80,80))
+    waves.append(wave4)
+    wave5=pg.image.load('C:/Users/tabss/OneDrive/문서/GitHub/SWsummerproject_surfing_game/image/wave5.png')
+    wave5=pg.transform.scale(wave5,(80,80))
+    waves.append(wave5)
     
     boom= pg.image.load('C:/Users/tabss/OneDrive/문서/GitHub/SWsummerproject_surfing_game/image/boom.png')
 
-    trash1=pg.image.load('C:/Users/tabss/OneDrive/문서/GitHub/SWsummerproject_surfing_game/image/trash1.png')
-    trash1=pg.transform.scale(trash1,(80,80))
-    trashs.append(trash1)
-    trash2=pg.image.load('C:/Users/tabss/OneDrive/문서/GitHub/SWsummerproject_surfing_game/image/trash2.png')
-    trash2=pg.transform.scale(trash2,(80,80))
-    trashs.append(trash2)
-    trash3=pg.image.load('C:/Users/tabss/OneDrive/문서/GitHub/SWsummerproject_surfing_game/image/trash3.png')
-    trash3=pg.transform.scale(trash3,(80,80))
-    trashs.append(trash3)
-    trash4=pg.image.load('C:/Users/tabss/OneDrive/문서/GitHub/SWsummerproject_surfing_game/image/trash4.png')
-    trash4=pg.transform.scale(trash4,(80,80))
-    trashs.append(trash4)
-    trash5=pg.image.load('C:/Users/tabss/OneDrive/문서/GitHub/SWsummerproject_surfing_game/image/trash5.png')
-    trash5=pg.transform.scale(trash5,(80,80))
-    trashs.append(trash5)
-    trash6=pg.image.load('C:/Users/tabss/OneDrive/문서/GitHub/SWsummerproject_surfing_game/image/trash6.png')
-    trash6=pg.transform.scale(trash6,(80,80))
-    trashs.append(trash6)
-    trash7=pg.image.load('C:/Users/tabss/OneDrive/문서/GitHub/SWsummerproject_surfing_game/image/trash7.png')
-    trash7=pg.transform.scale(trash7,(80,80))
-    trashs.append(trash7)
+    trash=pg.image.load('C:/Users/tabss/OneDrive/문서/GitHub/SWsummerproject_surfing_game/image/trash1.png')
+    trash=pg.transform.scale(trash,(80,80))
 
-    for i in range(7):
-        trashs.append(None)
+    for i in range(6):
+        waves.append(None)
     
     surf = pg.image.load('C:/Users/tabss/OneDrive/문서/GitHub/SWsummerproject_surfing_game/image/surf.png')
     surf = pg.transform.scale(surf,(150,150))
