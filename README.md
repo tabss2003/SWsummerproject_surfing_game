@@ -7,3 +7,8 @@
 
 #프로젝트 제안서[ppt]
 [복사본 서핑게임_20184429_김수빈.pptx](https://github.com/tabss2003/SWsummerproject_surfing_game/files/6806544/_20184429_.pptx)
+
+
+#프로젝트 중간 변경사항[ppt]
+[중간발표 서핑게임_20184429_김수빈.pptx](https://github.com/tabss2003/SWsummerproject_surfing_game/files/6837885/_20184429_.pptx)
+
