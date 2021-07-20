@@ -1,15 +1,18 @@
 import pygame
 import pygame as pg
 import random
+import sys
 from time import sleep
+from pygame import mixer
 
 
 WHITE= (255,255,255)
 RED=(255,0,0)
 BLACK =(0,0,0)
-
-LIFE = 3
-DISTANCE =0
+GREEN=(0,200,0)
+BLUE=(0,0,225)
+ORANGE=(255,165,0)
+clock = pg.time.Clock()
 
 pad_width= 1024
 pad_height=512
@@ -29,19 +32,30 @@ wave3_height=80
 wave4_width=80
 wave4_height=80
 
-def drew_dis():
-    distancefont=pg.font.SysFont('freesansbold.ttf',30,True,False)
-    text_distance = distancefont.render(str(DISTANCE)+"M",True,BLACK)
-    gamepad.blit(text_distance,[pad_width,pad_height/2])
+def distanceScore(count):
+    global gamepad
 
-    for i in range(LIFE):
-        if i<3:
-            LIFEimage = pg.image.load('C:/Users/tabss/OneDrive/문서/GitHub/SWsummerproject_surfing_game/image/surf.png')
-            LIFEimage = pg.transform.scale(LIFEimage,(15,15))
-            gamepad.blit(LIFEimage,[15,15])
-        else:
-            text_pnumber = distancefont.render("+"+str(LIFE-3),True,WHITE)
-            gamepad.blit(text_pnumber,[30,30])
+    font = pg.font.SysFont(None,25)
+    text = font.render(str(count)+' M',True,WHITE)
+    gamepad.blit(text,(0,20))
+
+def drawScore(count):
+    global gamepad
+
+    font = pg.font.SysFont(None,25)
+    text = font.render('trash pass: '+str(count),True,WHITE)
+    gamepad.blit(text,(0,0))
+
+
+def gameover():
+    global gamepad,background
+    pg.mixer.music.stop()
+    largeText = pg.font.Font('freesansbold.ttf',115)
+    TextSurf,TextRect =textObj('GAME OVER',largeText)
+    TextRect.center=((pad_width/2),(pad_height/2))
+    gamepad.blit(TextSurf,TextRect)
+    pg.display.update()
+ # 기록 추가 
     
 def textObj(text,font):
     textSurface = font.render(text,True, RED)
@@ -56,23 +70,75 @@ def dispMessage(text):
     gamepad.blit(TextSurf,TextRect)
     pg.display.update()
     sleep(2)
-
+    runGame()
 def crash():
-    global gamepad
-    dispMessage('END!')
+    global gamepad,LIFE
+    dispMessage('Crashed!')
+    
+def text_objects(text,font):
+    textSurface = font.render(text,True,BLUE)
+    return textSurface,textSurface.get_rect()
 
 def drawObject(obj,x,y):
     global gamepad
     gamepad.blit(obj,(x,y))
 
+def button(txt,x,y,w,h,ic,ac,action =None):
+    global gamepad
+    
+    Mouse = pg.mouse.get_pos()
+    click=pg.mouse.get_pressed()
 
-def runGame():
-    global gamepad,clock,surf,background1,background2,LIFE
+    if x+w>Mouse[0]>x and y+h>Mouse[1]>y:
+        pg.draw.rect(gamepad,ac,(x,y,w,h))
+        if click[0] == 1 and action != None:
+            action()
+    else:
+        pg.draw.rect(gamepad,ic,(x,y,w,h))
+
+    buttonText = pg.font.SysFont("freesansbold.ttf",50)
+    textSurf, textRect = text_objects(txt,buttonText)
+    textRect.center =((x+(w/2)),(y+(h/2)))
+    gamepad.blit(textSurf,textRect)
+
+def exitGame():
+    pg.quit()
+    sys.exit()
+def introScreen():
+    global gamepad
+    intro =True
+
+    while intro:
+        for event in pg.event.get():
+            if event.type == pg.QUIT:
+                pg.quit()
+        gamepad.fill(WHITE)
+        
+        Intro=pg.image.load('C:/Users/tabss/OneDrive/문서/GitHub/SWsummerproject_surfing_game/image/background.jpg')
+        Intro= pg.transform.scale(Intro,(1024,512))
+        gamepad.blit(Intro,(0,0))
+
+        mainText = pg.font.SysFont("freesansbold.ttf",115)
+        TextSurf, TextRect = text_objects("surfing game",mainText)
+        TextRect.center =((pad_width/2),100)
+        gamepad.blit(TextSurf,TextRect)
+
+        button("START",425,200,150,50,GREEN,ORANGE,runGame) 
+        button("RANK",425,300,150,50,GREEN,ORANGE,None) # 데베와 연동
+        button("EXIT",425,400,150,50,RED,ORANGE,exitGame) 
+        
+        pg.display.update()
+        clock.tick(15)
+
+def runGame(): # 중지 버튼 추가 - 랭킹,취소 추가
+    global gamepad,clock,surf,background1,background2
     global waves,trash,bullet,boom
+    global shot_sound
 
     isShottrash = False
     boom_count =0
-    
+    trash_pass = 0
+    distance=0
     bullet_xy=[]
 
     x= pad_width * 0.05
@@ -108,6 +174,7 @@ def runGame():
                     y_change= 5
                     
                 elif event.key == pg.K_SPACE:
+                    pg.mixer.Sound.play(shot_sound)
                     bullet_x = x+surf_width
                     bullet_y = y+surf_height
                     bullet_xy.append([bullet_x,bullet_y])
@@ -119,19 +186,29 @@ def runGame():
                     y_change =0
 
         gamepad.fill(WHITE)
-        drew_dis()
-        background1_x -=2 
+        
+        background1_x -=2
+        distance+=5
         background2_x -=2
+        
 
 
         if background1_x == -background_width:
             background1_x =background_width
+            #distance+=10
             
         if background2_x == -background_width:
             background2_x =background_width
+            #distance+=10
 
         drawObject(background1,background1_x,0)
         drawObject(background2,background2_x,0)
+
+        drawScore(trash_pass)
+        distanceScore(distance)
+
+        if trash_pass >= 5: # 5개이상 지나칠 경우 gameover // LIFE -1로 바꾸기 
+            gameover()
         
         x+=x_change
         y+=y_change
@@ -148,6 +225,7 @@ def runGame():
         
         trash_x -=5
         if trash_x<=0:
+            trash_pass+=1 #쓰레기 그냥 지나갈경우
             trash_x = pad_width
             trash_y=random.randrange(0,pad_height)
 
@@ -179,9 +257,10 @@ def runGame():
                     except:
                         pass
 
-        if x + surf_width> trash_x:
+        if x + surf_width> trash_x: 
             if(y>trash_y and y< trash_y +trash_height)or (y+surf_height > trash_y and y+ surf_height<trash_y+trash_height):
-                LIFE-=1
+                crash() 
+                
 
         if wave[1]!=None:
             if wave[0] == 0:
@@ -198,7 +277,8 @@ def runGame():
                 wave_height=wave4_height
             if x+ surf_width > wave_x:
                 if(y>wave_y and y< wave_y+wave_height)or (y+surf_height>wave_y and y+surf_height<wave_y+wave_height):
-                    LIFE-=1
+                    crash()
+                    
                     
         drawObject(surf,x,y)
 
@@ -210,7 +290,7 @@ def runGame():
             drawObject(trash,trash_x,trash_y)
         else:
             drawObject(boom,trash_x,trash_y)
-            boom_count+=1
+            boom_count+=1 
             if boom_count>5:
                 trash_x=pad_width
                 trash_y=random.randrange(0,pad_height-trash_height)
@@ -229,14 +309,18 @@ def runGame():
 def initGame():
     global gamepad,clock,surf,background1,background2
     global waves,trash,bullet,boom
-
+    global shot_sound,background
 
     waves=[]
-
     
     pygame.init()
     gamepad=pg.display.set_mode((pad_width,pad_height))
     pg.display.set_caption('surfing game')
+
+    background=pg.mixer.music.load('C:/Users/tabss/OneDrive/문서/GitHub/SWsummerproject_surfing_game/sound/background.wav')
+    pg.mixer.music.play(-1)
+    
+    shot_sound=pg.mixer.Sound('C:/Users/tabss/OneDrive/문서/GitHub/SWsummerproject_surfing_game/sound/shot.wav')
 
     background1 =pg.image.load('C:/Users/tabss/OneDrive/문서/GitHub/SWsummerproject_surfing_game/image/water.jpg')
     background1= pg.transform.scale(background1,(1024,512))
@@ -272,6 +356,6 @@ def initGame():
     bullet = pg.image.load('C:/Users/tabss/OneDrive/문서/GitHub/SWsummerproject_surfing_game/image/bullet.png')
     #bullet = pg.transform.rotate(bullet,180)
     clock = pg.time.Clock()
-    runGame()
-
+   #runGame() ## 첫화면ㄱ ㅘ 바꾸기 
+    introScreen()
 initGame()
