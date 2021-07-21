@@ -4,7 +4,23 @@ import random
 import sys
 from time import sleep
 from pygame import mixer
+import os
 
+import firebase_admin
+from firebase_admin import credentials
+from firebase_admin import firestore
+
+cred = credentials.Certificate("C:/Users/tabss/Downloads/summerproject-game-firebase-adminsdk-o40x0-e3aea148b1.json")
+firebase_admin.initialize_app(cred)
+db = firestore.client()
+
+#문서 자체 읽어오기
+rank_ref = db.collection('랭킹').document('기록')
+rank_read= db.collection('랭킹').stream()
+for key in rank_read:
+    valuekey= f'{key.to_dict}'
+Current_image_path="C:/Users/tabss/OneDrive/문서/GitHub/SWsummerproject_surfing_game/image"
+Current_sound_path="C:/Users/tabss/OneDrive/문서/GitHub/SWsummerproject_surfing_game/sound"
 
 WHITE= (255,255,255)
 RED=(255,0,0)
@@ -32,11 +48,26 @@ wave3_height=80
 wave4_width=80
 wave4_height=80
 
-def distanceScore(count):
+
+def Score_storage(distance):
+
+    rank_ref_a=db.collection('랭킹').document('기록')
+    doc=rank_ref_a.get()
+    
+    largeText = pg.font.Font('freesansbold.ttf',50)
+    
+    TextSurf,TextRect =textObj(str(doc.to_dict()),largeText)
+    TextRect.center=(500,400)
+    gamepad.blit(TextSurf,TextRect)
+    pg.display.update()
+    sleep(3)
+        
+
+def distanceScore(distance):
     global gamepad
 
     font = pg.font.SysFont(None,25)
-    text = font.render(str(count)+' M',True,WHITE)
+    text = font.render(str(distance)+' M',True,WHITE)
     gamepad.blit(text,(0,20))
 
 def drawScore(count):
@@ -47,15 +78,28 @@ def drawScore(count):
     gamepad.blit(text,(0,0))
 
 
-def gameover():
+def gameover(distance):#점수출력
     global gamepad,background
     pg.mixer.music.stop()
     largeText = pg.font.Font('freesansbold.ttf',115)
     TextSurf,TextRect =textObj('GAME OVER',largeText)
-    TextRect.center=((pad_width/2),(pad_height/2))
+    TextRect.center=((pad_width/2),(pad_height/2)/2) 
     gamepad.blit(TextSurf,TextRect)
     pg.display.update()
- # 기록 추가 
+    rank_ref_a=db.collection('랭킹').document('기록')
+    doc=rank_ref_a.get()
+    dic_doc=dict(doc.to_dict())
+    for key,value in dic_doc.items():
+        if  int(value)>= int(distance):
+            score=int(value)
+        else:
+            score=int(distance)
+            
+    rank_ref.set({
+        'VIP':score})
+    Score_storage(score)
+    sleep(3)
+    introScreen()
     
 def textObj(text,font):
     textSurface = font.render(text,True, RED)
@@ -104,17 +148,32 @@ def button(txt,x,y,w,h,ic,ac,action =None):
 def exitGame():
     pg.quit()
     sys.exit()
+def ScoreScreen(): ## 수정 distance 
+    global gamepad,distance
+    rank_ref_a=db.collection('랭킹').document('기록')
+    doc=rank_ref_a.get()
+    largeText = pg.font.Font('freesansbold.ttf',50)
+    TextSurf,TextRect =textObj(str(doc.to_dict()),largeText)
+    TextRect.center=(500,400)
+    gamepad.blit(TextSurf,TextRect)
+    pg.display.update()
+    sleep(3)
+    
+def soundoff():
+    global shot_sound 
+    pg.mixer.music.stop()
+
+    
 def introScreen():
     global gamepad
     intro =True
-
     while intro:
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 pg.quit()
         gamepad.fill(WHITE)
         
-        Intro=pg.image.load('C:/Users/tabss/OneDrive/문서/GitHub/SWsummerproject_surfing_game/image/background.jpg')
+        Intro=pg.image.load(os.path.join(Current_image_path,'background.jpg'))
         Intro= pg.transform.scale(Intro,(1024,512))
         gamepad.blit(Intro,(0,0))
 
@@ -123,15 +182,16 @@ def introScreen():
         TextRect.center =((pad_width/2),100)
         gamepad.blit(TextSurf,TextRect)
 
-        button("START",425,200,150,50,GREEN,ORANGE,runGame) 
-        button("RANK",425,300,150,50,GREEN,ORANGE,None) # 데베와 연동
-        button("EXIT",425,400,150,50,RED,ORANGE,exitGame) 
+        button("START",425,150,150,50,GREEN,ORANGE,runGame) 
+        button("RANK",425,250,150,50,GREEN,ORANGE,ScoreScreen)
+        button('BGM Off',425,350,150,50,GREEN,ORANGE,soundoff)
+        button("EXIT",425,450,150,50,RED,ORANGE,exitGame) 
         
         pg.display.update()
         clock.tick(15)
 
 def runGame(): # 중지 버튼 추가 - 랭킹,취소 추가
-    global gamepad,clock,surf,background1,background2
+    global gamepad,clock,surf,background1,background2,distance
     global waves,trash,bullet,boom
     global shot_sound
 
@@ -207,8 +267,8 @@ def runGame(): # 중지 버튼 추가 - 랭킹,취소 추가
         drawScore(trash_pass)
         distanceScore(distance)
 
-        if trash_pass >= 5: # 5개이상 지나칠 경우 gameover // LIFE -1로 바꾸기 
-            gameover()
+        if trash_pass >= 5: # 5개이상 지나칠 경우 gameover // LIFE -1로 바꾸기
+            gameover(distance)
         
         x+=x_change
         y+=y_change
@@ -308,7 +368,7 @@ def runGame(): # 중지 버튼 추가 - 랭킹,취소 추가
 
 def initGame():
     global gamepad,clock,surf,background1,background2
-    global waves,trash,bullet,boom
+    global waves,trash,bullet,boom,shot_sound
     global shot_sound,background
 
     waves=[]
@@ -317,22 +377,22 @@ def initGame():
     gamepad=pg.display.set_mode((pad_width,pad_height))
     pg.display.set_caption('surfing game')
 
-    background=pg.mixer.music.load('C:/Users/tabss/OneDrive/문서/GitHub/SWsummerproject_surfing_game/sound/background.wav')
+    background=pg.mixer.music.load(os.path.join(Current_sound_path,'background.wav'))
     pg.mixer.music.play(-1)
     
-    shot_sound=pg.mixer.Sound('C:/Users/tabss/OneDrive/문서/GitHub/SWsummerproject_surfing_game/sound/shot.wav')
+    shot_sound=pg.mixer.Sound(os.path.join(Current_sound_path,'shot.wav'))
 
-    background1 =pg.image.load('C:/Users/tabss/OneDrive/문서/GitHub/SWsummerproject_surfing_game/image/water.jpg')
+    background1 =pg.image.load(os.path.join(Current_image_path,'water.jpg'))
     background1= pg.transform.scale(background1,(1024,512))
     background2 = background1.copy()
 
-    wave1=pg.image.load('C:/Users/tabss/OneDrive/문서/GitHub/SWsummerproject_surfing_game/image/wave.png')
+    wave1=pg.image.load(os.path.join(Current_image_path,'wave.png'))
     wave1=pg.transform.scale(wave1,(80,80))
-    wave2=pg.image.load('C:/Users/tabss/OneDrive/문서/GitHub/SWsummerproject_surfing_game/image/wave2.png')
+    wave2=pg.image.load(os.path.join(Current_image_path,'wave2.png'))
     wave2=pg.transform.scale(wave2,(80,80))
-    wave3=pg.image.load('C:/Users/tabss/OneDrive/문서/GitHub/SWsummerproject_surfing_game/image/wave3.png')
+    wave3=pg.image.load(os.path.join(Current_image_path,'wave3.png'))
     wave3=pg.transform.scale(wave3,(80,80))
-    wave4=pg.image.load('C:/Users/tabss/OneDrive/문서/GitHub/SWsummerproject_surfing_game/image/wave4.png')
+    wave4=pg.image.load(os.path.join(Current_image_path,'wave4.png'))
     wave4=pg.transform.scale(wave4,(80,80))
     
     waves.append((0,wave1))
@@ -340,22 +400,23 @@ def initGame():
     waves.append((2,wave3))
     waves.append((3,wave4))
     
-    boom= pg.image.load('C:/Users/tabss/OneDrive/문서/GitHub/SWsummerproject_surfing_game/image/boom.png')
+    boom= pg.image.load(os.path.join(Current_image_path,'boom.png'))
 
-    trash=pg.image.load('C:/Users/tabss/OneDrive/문서/GitHub/SWsummerproject_surfing_game/image/trash1.png')
+    trash=pg.image.load(os.path.join(Current_image_path,'trash1.png'))
     trash=pg.transform.scale(trash,(80,80))
 
 
     for i in range(5):
         waves.append((i+2,None))
 
-    surf = pg.image.load('C:/Users/tabss/OneDrive/문서/GitHub/SWsummerproject_surfing_game/image/surf.png')
+    surf = pg.image.load(os.path.join(Current_image_path,'surf.png'))
     surf = pg.transform.scale(surf,(150,150))
     surf = pg.transform.rotate(surf,-90)
 
-    bullet = pg.image.load('C:/Users/tabss/OneDrive/문서/GitHub/SWsummerproject_surfing_game/image/bullet.png')
-    #bullet = pg.transform.rotate(bullet,180)
+    bullet = pg.image.load(os.path.join(Current_image_path,'bullet.png'))
+    
     clock = pg.time.Clock()
-   #runGame() ## 첫화면ㄱ ㅘ 바꾸기 
+   
     introScreen()
+    
 initGame()
