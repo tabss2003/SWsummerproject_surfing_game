@@ -2,8 +2,11 @@
 
 #python_이용한_surfing_game
 
-#python - pygame 모듈 이용
-#database - firebase 이용하여 최대 거리 기록 저장
+
+-pygame 모듈 이용
+명령프롬프트 pip install pygame
+
+-database - firebase 이용하여 최대 거리 기록 저장
 
 #프로젝트 일정[간트차트]
 ![간트차트](https://user-images.githubusercontent.com/43884708/125405738-ffe94300-e3f2-11eb-86b8-ffadfc26b224.JPG)
