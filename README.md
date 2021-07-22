@@ -1,7 +1,7 @@
 # SWsummerproject_surfing_game
 
 #python_이용한_surfing_game
-
+@python,firebase이용
 
 -pygame 모듈 이용
 명령프롬프트 pip install pygame
