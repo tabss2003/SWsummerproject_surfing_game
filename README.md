@@ -2,6 +2,8 @@
 
 #python_이용한_surfing_game
 
+#python - pygame 모듈 이용
+
 #프로젝트 일정[간트차트]
 ![간트차트](https://user-images.githubusercontent.com/43884708/125405738-ffe94300-e3f2-11eb-86b8-ffadfc26b224.JPG)
 
