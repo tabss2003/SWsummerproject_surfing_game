@@ -20,6 +20,7 @@
 
 ◎게임 룰
 -캐릭터의 생명 = trash_pass 와 같다.
+
 -trash_pass = 0 에서 시작을 하며, trash_pass =5가 될 경우 GAMEOVER
 -최대 거리기록제로 제일 멀리 간 기록을 RANK을 누르면 확인할 수 있다.
 -거리는 0M에서 시작한다.
