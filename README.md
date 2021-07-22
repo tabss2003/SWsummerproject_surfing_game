@@ -18,6 +18,10 @@
 #프로젝트 중간 변경사항[ppt]
 [중간발표 서핑게임_20184429_김수빈.pptx](https://github.com/tabss2003/SWsummerproject_surfing_game/files/6837885/_20184429_.pptx)
 
+#프로젝트 최종 결과보고서[ptt]
+[최종결과발표자료_김수빈.pptx](https://github.com/tabss2003/SWsummerproject_surfing_game/files/6863844/_.pptx)
+
+
 #최종 결과
 [intro]
 ![intro](https://user-images.githubusercontent.com/43884708/126646679-1e684251-70d6-495c-a992-51f657dd2a24.JPG)
