@@ -67,14 +67,14 @@ def distanceScore(distance):
     global gamepad
 
     font = pg.font.SysFont(None,25)
-    text = font.render(str(distance)+' M',True,WHITE)
+    text = font.render(str(distance)+' M',True,BLACK)
     gamepad.blit(text,(0,20))
 
 def drawScore(count):
     global gamepad
 
     font = pg.font.SysFont(None,25)
-    text = font.render('trash pass: '+str(count),True,WHITE)
+    text = font.render('trash pass: '+str(count),True,BLACK)
     gamepad.blit(text,(0,0))
 
 
